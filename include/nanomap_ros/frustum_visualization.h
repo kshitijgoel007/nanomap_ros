@@ -12,47 +12,60 @@ typedef Eigen::Matrix<Scalar, 3, 3> Matrix3;
 #include "geometry_msgs/TwistStamped.h"
 #include <visualization_msgs/Marker.h>
 
-Vector3 applyTransform(Vector3 p, Eigen::Matrix4d transform) {
+Vector3 applyTransform(Vector3 p, Eigen::Matrix4d transform)
+{
   Vector4 p_aug;
   p_aug << p, 1.0;
   p_aug = transform * p_aug;
   return Vector3(p_aug(0), p_aug(1), p_aug(2));
 }
 
-std_msgs::ColorRGBA GetColorForFOV(int fov_id) {
+std_msgs::ColorRGBA GetColorForFOV(int fov_id)
+{
   fov_id = fov_id + 100;
   std_msgs::ColorRGBA c;
-  if (fov_id == 0) {
+  if (fov_id == 0)
+  {
     // purple
     c.r = 0.9;
     c.g = 0.1;
     c.b = 0.9;
     c.a = 0.15;
-  } else if (fov_id == 10) {
+  }
+  else if (fov_id == 10)
+  {
     // orange
     c.r = 1.0;
     c.g = 165.0 / 255.0;
     c.b = 0.1;
     c.a = 0.15;
-  } else if (fov_id == 20) {
+  }
+  else if (fov_id == 20)
+  {
     // blue
     c.r = 0.1;
     c.g = 0.1;
     c.b = 1.0;
     c.a = 0.15;
-  } else if (fov_id == 30) {
+  }
+  else if (fov_id == 30)
+  {
     // red
     c.r = 1.0;
     c.g = 0.1;
     c.b = 0.1;
     c.a = 0.15;
-  } else if (fov_id == 40) {
+  }
+  else if (fov_id == 40)
+  {
     // red
     c.r = 0.1;
     c.g = 1.0;
     c.b = 0.1;
     c.a = 0.15;
-  } else {
+  }
+  else
+  {
     c.r = 0.0;
     c.g = 0.0;
     c.b = 0.0;
@@ -63,7 +76,8 @@ std_msgs::ColorRGBA GetColorForFOV(int fov_id) {
 
 void BuildSideOfFOV(Vector3 body, Vector3 corner_1, Vector3 corner_2,
                     visualization_msgs::Marker &marker, int fov_id,
-                    bool color_in_fov) {
+                    bool color_in_fov)
+{
 
   geometry_msgs::Point p;
   p.x = body(0);
@@ -93,7 +107,8 @@ void BuildSideOfFOV(Vector3 body, Vector3 corner_1, Vector3 corner_2,
 
 void BuildLineOfFOV(Vector3 corner_1, Vector3 corner_2,
                     visualization_msgs::Marker &marker, int fov_id,
-                    bool color_in_fov) {
+                    bool color_in_fov)
+{
 
   geometry_msgs::Point p;
   p.x = corner_1(0);
@@ -116,7 +131,8 @@ void BuildLineOfFOV(Vector3 corner_1, Vector3 corner_2,
 
 std::vector<visualization_msgs::Marker>
 BuildFovMarker(int fov_id, Vector3 body, Vector3 corner_1, Vector3 corner_2,
-               Vector3 corner_3, Vector3 corner_4, bool color_in_fov) {
+               Vector3 corner_3, Vector3 corner_4, bool color_in_fov)
+{
   std::string drawing_frame = "world";
   visualization_msgs::Marker marker;
   marker.header.frame_id = drawing_frame;
@@ -147,9 +163,11 @@ BuildFovMarker(int fov_id, Vector3 body, Vector3 corner_1, Vector3 corner_2,
   fov_corners.push_back(corner_4); // bottom left
 
   int j = 0;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++)
+  {
     j = i + 1;
-    if (j == 4) {
+    if (j == 4)
+    {
       j = 0;
     }; // connect back around
     BuildSideOfFOV(body, fov_corners.at(i), fov_corners.at(j), marker, fov_id,
@@ -166,9 +184,11 @@ BuildFovMarker(int fov_id, Vector3 body, Vector3 corner_1, Vector3 corner_2,
   marker.scale.z = 0.1;
   marker.points.clear();
   marker.colors.clear();
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++)
+  {
     j = i + 1;
-    if (j == 4) {
+    if (j == 4)
+    {
       j = 0;
     }; // connect back around
     BuildLineOfFOV(body, fov_corners.at(i), marker, fov_id,
