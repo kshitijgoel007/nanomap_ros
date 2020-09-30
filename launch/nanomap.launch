@@ -1,9 +1,8 @@
 <launch>
-    <arg name="robot_name" default="delta" />
 
     <node pkg="nanomap_ros" type="visualization_node" name="visualization_node" output="screen">
-        <remap from="points" to="$(arg robot_name)/rgbd/camera_depth/depth/points" />
-        <remap from="odometry" to="$(arg robot_name)/odometry_sensor1/odometry" />
+        <remap from="points" to="/points2" />
+        <remap from="odometry" to="/camera/odom_50hz" />
     </node>
 
 </launch>
