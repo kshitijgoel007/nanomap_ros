@@ -31,6 +31,7 @@ catkin_package(
   # CATKIN_DEPENDS roscpp
 #  DEPENDS other non-ROS libs
 )
+add_compile_options(-pg)
 
 include_directories(
   include/${PROJECT_NAME}

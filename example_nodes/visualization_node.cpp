@@ -213,9 +213,8 @@ public:
     // NanoMapTime nm_time(pose.header.stamp.sec, pose.header.stamp.nsec);
     NanoMapTime nm_time(odom.header.stamp.sec, odom.header.stamp.nsec);
     NanoMapPose nm_pose(pos, quat, nm_time);
-    nanomap.AddPose(nm_pose);
+    // nanomap.AddPose(nm_pose);
 
-    // curr_pose = pose.pose;
     curr_pose = pose;
 
     // todo: abstract this into SetLastPose

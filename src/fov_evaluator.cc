@@ -1,45 +1,59 @@
 #include "fov_evaluator.h"
 
-Vector3 FovEvaluator::RotateToSensorFrame(Vector3 position_body_frame) {
-  if (0) {
+Vector3 FovEvaluator::RotateToSensorFrame(Vector3 position_body_frame)
+{
+  if (0)
+  {
     std::cout << "rotate matrix " << R_body_to_rdf_ << std::endl;
   }
   return R_body_to_rdf_ * position_body_frame;
 }
 
-bool FovEvaluator::IsBehind(Vector3 position) const {
+bool FovEvaluator::IsBehind(Vector3 position) const
+{
   return (position(2) < 0.0);
 }
 
-bool FovEvaluator::IsBeyondSensorHorizon(Vector3 position) const {
+bool FovEvaluator::IsBeyondSensorHorizon(Vector3 position) const
+{
   return (position(2) > sensor_range_);
 }
 
-bool FovEvaluator::IsOutsideDeadBand(Vector3 position) const {
+bool FovEvaluator::IsOutsideDeadBand(Vector3 position) const
+{
   return (position.squaredNorm() > 0.5);
 }
 
 NanoMapFovStatus FovEvaluator::EvaluateFov(PointCloudPtr const &point_cloud_ptr,
                                            Vector3 position, Vector3 aabb,
-                                           bool ignore_horizon) const {
-  for (int i = 0; i < 3; i++) {
-    if (aabb(i) < 0) {
+                                           bool ignore_horizon) const
+{
+  for (int i = 0; i < 3; i++)
+  {
+    if (aabb(i) < 0)
+    {
       aabb(i) = -aabb(i);
     }
   }
 
   Vector3 behind_aabb = position + Vector3(0, 0, 0.0);
   Vector3 beyond_aabb = position + Vector3(0, 0, 0.0);
-  if (IsBehind(behind_aabb + Vector3(0.0, 0.0, 0.5)) && ignore_horizon) {
-    return NanoMapFovStatus::behind;
-  } else if (IsBehind(behind_aabb) && !ignore_horizon) {
+  if (IsBehind(behind_aabb + Vector3(0.0, 0.0, 0.5)) && ignore_horizon)
+  {
     return NanoMapFovStatus::behind;
   }
-  if (!IsOutsideDeadBand(position) && ignore_horizon) {
+  else if (IsBehind(behind_aabb) && !ignore_horizon)
+  {
+    return NanoMapFovStatus::behind;
+  }
+  if (!IsOutsideDeadBand(position) && ignore_horizon)
+  {
     return NanoMapFovStatus::free_space;
   }
-  if (!ignore_horizon) {
-    if (IsBeyondSensorHorizon(beyond_aabb)) {
+  if (!ignore_horizon)
+  {
+    if (IsBeyondSensorHorizon(beyond_aabb))
+    {
       return NanoMapFovStatus::beyond_sensor_horizon;
     }
   }
@@ -73,36 +87,46 @@ NanoMapFovStatus FovEvaluator::EvaluateFov(PointCloudPtr const &point_cloud_ptr,
   // std::cout << std::endl;
 
   if ((std::min(pi_x_left_down_aabb, pi_x) < 0) ||
-      (std::max(pi_x_right_up_aabb, pi_x) > (num_x_pixels - 1))) {
+      (std::max(pi_x_right_up_aabb, pi_x) > (num_x_pixels - 1)))
+  {
     return NanoMapFovStatus::laterally_outside_fov;
   }
   // Checks if above top/bottom FOV
-  if (std::min(pi_y_right_up_aabb, pi_y) < 0) {
+  if (std::min(pi_y_right_up_aabb, pi_y) < 0)
+  {
     return NanoMapFovStatus::laterally_outside_fov;
   }
-  if (std::max(pi_y_left_down_aabb, pi_y) > (num_y_pixels - 1)) {
+  if (std::max(pi_y_left_down_aabb, pi_y) > (num_y_pixels - 1))
+  {
     return NanoMapFovStatus::laterally_outside_fov;
   }
 
   // Checks for occlusion
-  if (point_cloud_ptr == nullptr) {
+  if (point_cloud_ptr == nullptr)
+  {
     return NanoMapFovStatus::free_space;
   }
   pcl::PointXYZ point = point_cloud_ptr->at(pi_x, pi_y);
-  if (std::isnan(point.z)) {
+  if (std::isnan(point.z))
+  {
     return NanoMapFovStatus::free_space;
   }
-  if (position(2) > point.z) {
+  if (position(2) > point.z)
+  {
     return NanoMapFovStatus::occluded;
   }
   return NanoMapFovStatus::free_space;
 }
 
 void FovEvaluator::SetCameraInfo(double bin, double width, double height,
-                                 Matrix3 const &K_camera_info) {
-  if (bin < 1.0) {
+                                 Matrix3 const &K_camera_info)
+{
+  if (bin < 1.0)
+  {
     binning = 1.0;
-  } else {
+  }
+  else
+  {
     binning = bin;
   }
   num_x_pixels = width / binning;
@@ -115,6 +139,7 @@ void FovEvaluator::SetCameraInfo(double bin, double width, double height,
 
 void FovEvaluator::SetSensorRange(double range) { sensor_range_ = range; }
 
-void FovEvaluator::SetBodyToRdf(Matrix3 const &R_body_to_rdf) {
+void FovEvaluator::SetBodyToRdf(Matrix3 const &R_body_to_rdf)
+{
   R_body_to_rdf_ = R_body_to_rdf;
 }
