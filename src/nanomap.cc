@@ -14,7 +14,9 @@ void NanoMap::AddPose(NanoMapPose const &pose)
     std::cout << "In AddPose" << std::endl;
   }
   pose_manager.AddPose(pose);
-
+  // if (pose_manager.GetNumPoses() > 10)
+  // {
+  // }
   // try adding point clouds off buffer
   TryAddingPointCloudBufferToChain();
 

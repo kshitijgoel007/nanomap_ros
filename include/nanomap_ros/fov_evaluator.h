@@ -20,6 +20,7 @@ private:
 
   Matrix3 R_body_to_rdf_;
   double sensor_range_ = 10.0;
+  int  depth_image_history_ = 10;
 
   Matrix3 K;
   double binning = 4.0;

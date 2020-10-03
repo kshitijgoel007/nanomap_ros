@@ -1,31 +1,38 @@
 #include "pose_manager.h"
 
-void PoseManager::AddPose(NanoMapPose const &pose) {
-  if (NANOMAP_DEBUG_PRINT) {
+void PoseManager::AddPose(NanoMapPose const &pose)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Adding pose, previous poses.size() " << poses.size()
               << std::endl;
   }
   size_t poses_size = poses.size();
-  if (poses_size <= 0) {
+  if (poses_size <= 0)
+  {
     poses.push_front(pose);
     return;
   }
 
   // new poses
-  if (pose.time.GreaterThan(poses.front().time)) {
+  if (pose.time.GreaterThan(poses.front().time))
+  {
     poses.push_front(pose);
   }
 
   // older poses
-  else if (poses.back().time.GreaterThan(pose.time)) {
+  else if (poses.back().time.GreaterThan(pose.time))
+  {
     poses.push_back(pose);
-
   }
 
-  else {
+  else
+  {
     // in between poses
-    for (size_t i = 0; i < poses_size; i++) {
-      if (pose.time.GreaterThan(poses.at(i).time)) {
+    for (size_t i = 0; i < poses_size; i++)
+    {
+      if (pose.time.GreaterThan(poses.at(i).time))
+      {
         // NanoMapPose array[] = {};
         poses.insert(poses.begin() + i, pose);
         return;
@@ -33,53 +40,73 @@ void PoseManager::AddPose(NanoMapPose const &pose) {
     }
   }
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     CheckMonotonic();
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Added pose, now poses.size() " << poses.size() << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     PrintAllPosePositions();
   }
+
+  std::cout << "Current poses.size() " << poses.size() << std::endl;
 }
 
-void PoseManager::CheckMonotonic() const {
+void PoseManager::CheckMonotonic() const
+{
   NanoMapPose newer_pose;
   NanoMapPose older_pose;
-  for (size_t i = 0; i < poses.size(); i++) {
-    if (i == 0) {
+  for (size_t i = 0; i < poses.size(); i++)
+  {
+    if (i == 0)
+    {
       newer_pose = poses.at(i);
       continue;
-    } else {
+    }
+    else
+    {
       older_pose = poses.at(i);
-      if (older_pose.time.GreaterThan(newer_pose.time)) {
+      if (older_pose.time.GreaterThan(newer_pose.time))
+      {
         std::cout << "WARNING NOT MONOTONIC POSES" << std::endl;
       }
     }
   }
 }
 
-void PoseManager::DeleteMemoryBeforeTime(NanoMapTime const &delete_time) {
-  if (NANOMAP_DEBUG_PRINT) {
+void PoseManager::DeleteMemoryBeforeTime(NanoMapTime const &delete_time)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "deleting poses" << std::endl;
   }
-  while (poses.size() >= 0) {
-    if (NANOMAP_DEBUG_PRINT) {
+  while (poses.size() >= 0)
+  {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "deleting another pose" << std::endl;
     }
-    if (NANOMAP_DEBUG_PRINT) {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "delete time      " << delete_time.sec << "."
                 << delete_time.nsec << std::endl;
     }
     NanoMapPose i = poses.back();
-    if (NANOMAP_DEBUG_PRINT) {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "oldest_pose_time " << i.time.sec << "." << i.time.nsec
                 << std::endl;
     }
-    if (delete_time.GreaterThan(i.time)) {
+    if (delete_time.GreaterThan(i.time))
+    {
       poses.pop_back();
-    } else {
+    }
+    else
+    {
       break;
     }
   }
@@ -87,36 +114,46 @@ void PoseManager::DeleteMemoryBeforeTime(NanoMapTime const &delete_time) {
 
 // delete in between times, inclusive
 void PoseManager::DeleteMemoryInBetweenTime(NanoMapTime const &time_before,
-                                            NanoMapTime const &time_after) {
-  if (NANOMAP_DEBUG_PRINT) {
+                                            NanoMapTime const &time_after)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "deleting poses, starting with " << poses.size() << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     PrintAllPosePositions();
   }
-  if (poses.size() <= 0) {
+  if (poses.size() <= 0)
+  {
     return;
   }
 
   int num_deleted = 0;
-  for (size_t i = 0; i < poses.size() + num_deleted; i++) {
+  for (size_t i = 0; i < poses.size() + num_deleted; i++)
+  {
     // iterating over poses from newest to oldest
-    if (NANOMAP_DEBUG_PRINT) {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << poses.at(i - num_deleted).time.nsec
                 << " is time of pose in pose manager" << std::endl;
     }
 
     // if pose is too new, continue
-    if (poses.at(i - num_deleted).time.GreaterThan(time_after)) {
-      if (NANOMAP_DEBUG_PRINT) {
+    if (poses.at(i - num_deleted).time.GreaterThan(time_after))
+    {
+      if (NANOMAP_DEBUG_PRINT)
+      {
         std::cout << " too new " << std::endl;
       }
       continue;
     }
 
     // if pose is too old, break
-    if (time_before.GreaterThan(poses.at(i - num_deleted).time)) {
-      if (NANOMAP_DEBUG_PRINT) {
+    if (time_before.GreaterThan(poses.at(i - num_deleted).time))
+    {
+      if (NANOMAP_DEBUG_PRINT)
+      {
         std::cout << " too old " << std::endl;
       }
       break;
@@ -126,50 +163,62 @@ void PoseManager::DeleteMemoryInBetweenTime(NanoMapTime const &time_before,
     poses.erase(poses.begin() + (i - num_deleted));
     num_deleted++;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "deleted poses, ending with " << poses.size() << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     PrintAllPosePositions();
   }
 }
 
-NanoMapTime PoseManager::GetMostRecentPoseTime() const {
+NanoMapTime PoseManager::GetMostRecentPoseTime() const
+{
   return poses.front().time;
 }
 
 NanoMapTime PoseManager::GetOldestPoseTime() const { return poses.back().time; }
 
 bool PoseManager::CanInterpolatePoseAtTime(
-    NanoMapTime const &query_time) const {
-  if (poses.size() == 0) {
+    NanoMapTime const &query_time) const
+{
+  if (poses.size() == 0)
+  {
     return false;
   }
 
   NanoMapTime oldest_time = poses.back().time;
   NanoMapTime newest_time = poses.front().time;
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "query time " << query_time.sec << "." << query_time.nsec
               << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "oldest_time " << oldest_time.sec << "." << oldest_time.nsec
               << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "newest_time " << newest_time.sec << "." << newest_time.nsec
               << std::endl;
   }
 
-  if (oldest_time.GreaterThan(query_time)) {
-    if (NANOMAP_DEBUG_PRINT) {
+  if (oldest_time.GreaterThan(query_time))
+  {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "returning false 1 in can interpolate" << std::endl;
     }
     return false;
   }
-  if (query_time.GreaterThan(newest_time)) {
-    if (NANOMAP_DEBUG_PRINT) {
+  if (query_time.GreaterThan(newest_time))
+  {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "returning false 2 in can interpolate" << std::endl;
     }
     return false;
@@ -179,46 +228,56 @@ bool PoseManager::CanInterpolatePoseAtTime(
 }
 
 bool PoseManager::CanInterpolatePosesForTwoTimes(
-    NanoMapTime const &time_from, NanoMapTime const &time_to) const {
+    NanoMapTime const &time_from, NanoMapTime const &time_to) const
+{
   return (CanInterpolatePoseAtTime(time_from) &&
           CanInterpolatePoseAtTime(time_to));
 }
 
-NanoMapPose PoseManager::GetPoseAtTime(NanoMapTime const &query_time) {
-  if (NANOMAP_DEBUG_PRINT) {
+NanoMapPose PoseManager::GetPoseAtTime(NanoMapTime const &query_time)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Inside GetPoseAtTime" << std::endl;
   }
 
   // check if this is newest pose, if it is, return
-  if (query_time.SameAs(poses.front().time)) {
+  if (query_time.SameAs(poses.front().time))
+  {
     return poses.front();
   }
 
   // iterate through pose times and find bookends
   size_t oldest_pose_index = poses.size() - 1;
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "oldest_pose_index " << oldest_pose_index << std::endl;
   }
 
   NanoMapPose pose_before = poses[oldest_pose_index];
   NanoMapPose pose_after;
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "starting search" << std::endl;
   }
-  for (int i = oldest_pose_index - 1; i >= 0; i--) {
-    if (NANOMAP_DEBUG_PRINT) {
+  for (int i = oldest_pose_index - 1; i >= 0; i--)
+  {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "i is " << i << std::endl;
     }
     pose_after = poses[i];
-    if (pose_after.time.GreaterThan(query_time)) {
+    if (pose_after.time.GreaterThan(query_time))
+    {
       break;
     }
     pose_before = pose_after;
   }
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "found bookends " << std::endl;
   }
 
@@ -229,13 +288,15 @@ NanoMapPose PoseManager::GetPoseAtTime(NanoMapTime const &query_time) {
                (pose_after.time.nsec - query_time.nsec) / 1.0e9;
 
   double t_parameter = t_1 / (t_1 + t_2);
-  if (t_parameter < 0) {
+  if (t_parameter < 0)
+  {
     std::cout << "WARNING, t_parameter < 0, suspected numerical precision "
                  "problem, thresholding to 0"
               << std::endl;
     t_parameter = 0;
   }
-  if (t_parameter > 1) {
+  if (t_parameter > 1)
+  {
     std::cout << "WARNING, t_parameter > 1, suspected numerical precision "
                  "problem, thresholding to 1"
               << std::endl;
@@ -247,36 +308,44 @@ NanoMapPose PoseManager::GetPoseAtTime(NanoMapTime const &query_time) {
 }
 
 NanoMapTime
-PoseManager::GetTimeOfPoseBefore(NanoMapTime const &query_time) const {
-  if (NANOMAP_DEBUG_PRINT) {
+PoseManager::GetTimeOfPoseBefore(NanoMapTime const &query_time) const
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Inside GetTimeOfPoseBefore" << std::endl;
   }
 
   // iterate through pose times and find bookends
   size_t oldest_pose_index = poses.size() - 1;
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "oldest_pose_index " << oldest_pose_index << std::endl;
   }
 
   NanoMapPose pose_before = poses[oldest_pose_index];
   NanoMapPose pose_after;
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "starting search" << std::endl;
   }
-  for (int i = oldest_pose_index - 1; i >= 0; i--) {
-    if (NANOMAP_DEBUG_PRINT) {
+  for (int i = oldest_pose_index - 1; i >= 0; i--)
+  {
+    if (NANOMAP_DEBUG_PRINT)
+    {
       std::cout << "i is " << i << std::endl;
     }
     pose_after = poses[i];
-    if (pose_after.time.GreaterThan(query_time)) {
+    if (pose_after.time.GreaterThan(query_time))
+    {
       break;
     }
     pose_before = pose_after;
   }
 
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "found bookends " << std::endl;
   }
   return pose_before.time;
@@ -284,11 +353,14 @@ PoseManager::GetTimeOfPoseBefore(NanoMapTime const &query_time) const {
 
 NanoMapPose PoseManager::InterpolateBetweenPoses(NanoMapPose const &pose_before,
                                                  NanoMapPose const &pose_after,
-                                                 double t_parameter) {
-  if (NANOMAP_DEBUG_PRINT) {
+                                                 double t_parameter)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Inside InterpolateBetweenPoses" << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "t_parameter " << t_parameter << std::endl;
   }
 
@@ -309,28 +381,35 @@ NanoMapPose PoseManager::InterpolateBetweenPoses(NanoMapPose const &pose_before,
 }
 
 Matrix4 PoseManager::GetRelativeTransformFromTo(NanoMapTime const &time_from,
-                                                NanoMapTime const &time_to) {
-  if (NANOMAP_DEBUG_PRINT) {
+                                                NanoMapTime const &time_to)
+{
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "Inside GetRelativeTransformFromTo" << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "time_from " << time_from.sec << "." << time_from.nsec
               << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "time_to   " << time_to.sec << "." << time_to.nsec
               << std::endl;
   }
   NanoMapPose pose_from = GetPoseAtTime(time_from);
   NanoMapPose pose_to = GetPoseAtTime(time_to);
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "pose_from" << pose_from.position.transpose() << std::endl;
   }
-  if (NANOMAP_DEBUG_PRINT) {
+  if (NANOMAP_DEBUG_PRINT)
+  {
     std::cout << "pose_to  " << pose_to.position.transpose() << std::endl;
   }
   Matrix4 transform = FindTransform(pose_from, pose_to);
-  if (transform.block<3, 1>(0, 3).norm() > 1) {
+  if (transform.block<3, 1>(0, 3).norm() > 1)
+  {
     // std::cout << "TRANSFORM UNEXPECTEDLY LARGE" << std::endl;
   }
   // std::cout << transform << std::endl;
@@ -338,7 +417,8 @@ Matrix4 PoseManager::GetRelativeTransformFromTo(NanoMapTime const &time_from,
 }
 
 Matrix4 PoseManager::FindTransform(NanoMapPose const &new_pose,
-                                   NanoMapPose const &previous_pose) {
+                                   NanoMapPose const &previous_pose)
+{
   // Matrix4 transform = Eigen::Matrix4d::Identity();
   // return transform;
   // std::cout << "new_pose " << new_pose.position.transpose() << " "
@@ -357,14 +437,16 @@ Matrix4 PoseManager::FindTransform(NanoMapPose const &new_pose,
          FindTransform(new_pose);
 }
 
-Matrix4 PoseManager::FindTransform(NanoMapPose const &pose) {
+Matrix4 PoseManager::FindTransform(NanoMapPose const &pose)
+{
   Matrix4 transform = Eigen::Matrix4d::Identity();
   transform.block<3, 3>(0, 0) = pose.quaternion.toRotationMatrix();
   transform.block<3, 1>(0, 3) = pose.position;
   return transform;
 }
 
-Matrix4 PoseManager::InvertTransform(Matrix4 const &transform) {
+Matrix4 PoseManager::InvertTransform(Matrix4 const &transform)
+{
   Matrix3 R = transform.block<3, 3>(0, 0);
   Vector3 t = transform.block<3, 1>(0, 3);
   Matrix4 inverted_transform = Eigen::Matrix4d::Identity();
@@ -373,9 +455,11 @@ Matrix4 PoseManager::InvertTransform(Matrix4 const &transform) {
   return inverted_transform;
 }
 
-void PoseManager::PrintAllPosePositions() {
+void PoseManager::PrintAllPosePositions()
+{
   int num_poses = poses.size();
-  for (int i = 0; i < num_poses; i++) {
+  for (int i = 0; i < num_poses; i++)
+  {
     std::cout << poses.at(i).position.transpose() << " at time "
               << poses.at(i).time.nsec << std::endl;
   }
