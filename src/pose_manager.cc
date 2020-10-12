@@ -53,7 +53,7 @@ void PoseManager::AddPose(NanoMapPose const &pose)
     PrintAllPosePositions();
   }
 
-  std::cout << "Current poses.size() " << poses.size() << std::endl;
+  // std::cout << "Current poses.size() " << poses.size() << std::endl;
 }
 
 void PoseManager::CheckMonotonic() const
