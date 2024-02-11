@@ -161,11 +161,11 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2_ros/transform_listener.h>
 
-#include "stopwatch.h"
+#include <nanomap_ros/stopwatch.h>
 #include <fstream>
 #include <nav_msgs/Path.h>
 
-#include "nanomap.h"
+#include <nanomap_ros/nanomap.h>
 
 
 NanoMap nanomap;

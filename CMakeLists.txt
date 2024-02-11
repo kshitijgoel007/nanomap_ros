@@ -26,7 +26,7 @@ find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include/${PROJECT_NAME}
+  INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   # CATKIN_DEPENDS roscpp
 #  DEPENDS other non-ROS libs
@@ -34,7 +34,7 @@ catkin_package(
 add_compile_options(-pg)
 
 include_directories(
-  include/${PROJECT_NAME}
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
@@ -42,7 +42,7 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 
 
-add_definitions("-std=c++11")
+add_definitions("-std=c++17")
 
 find_package(orocos_kdl REQUIRED)
 find_library(OROCOS_KDL orocos-kdl)
@@ -90,6 +90,6 @@ install(
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 install(
-  DIRECTORY include/${PROJECT_NAME}/
+  DIRECTORY include
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )

@@ -1,9 +1,9 @@
 #ifndef STRUCTURED_POINT_CLOUD_H
 #define STRUCTURED_POINT_CLOUD_H
 
-#include "fov_evaluator.h"
-#include "kd_tree_two.h"
-#include "nanomap_types.h"
+#include <nanomap_ros/fov_evaluator.h>
+#include <nanomap_ros/kd_tree_two.h>
+#include <nanomap_ros/nanomap_types.h>
 
 class StructuredPointCloud {
 public:

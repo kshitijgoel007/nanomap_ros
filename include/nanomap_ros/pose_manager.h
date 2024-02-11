@@ -1,7 +1,7 @@
 #ifndef POSE_MANAGER_H
 #define POSE_MANAGER_H
 
-#include "nanomap_types.h"
+#include <nanomap_ros/nanomap_types.h>
 
 class PoseManager {
 public:

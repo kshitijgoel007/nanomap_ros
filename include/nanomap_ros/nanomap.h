@@ -1,10 +1,10 @@
 #ifndef NANOMAP_H
 #define NANOMAP_H
 
-#include "fov_evaluator.h"
-#include "nanomap_types.h"
-#include "pose_manager.h"
-#include "structured_point_cloud_chain.h"
+#include <nanomap_ros/fov_evaluator.h>
+#include <nanomap_ros/nanomap_types.h>
+#include <nanomap_ros/pose_manager.h>
+#include <nanomap_ros/structured_point_cloud_chain.h>
 
 class NanoMap {
 public:

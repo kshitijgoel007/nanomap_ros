@@ -1,4 +1,4 @@
-#include "nanoflann_two.hpp"
+#include <nanomap_ros/nanoflann_two.hpp>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>

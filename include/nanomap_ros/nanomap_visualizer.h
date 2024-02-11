@@ -1,7 +1,7 @@
 #ifndef NANOMAP_VISUALIZER_H
 #define NANOMAP_VISUALIZER_H
 
-#include "nanomap_types.h"
+#include <nanomap_ros/nanomap_types.h>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>

@@ -1,4 +1,4 @@
-#include "structured_point_cloud_chain.h"
+#include <nanomap_ros/structured_point_cloud_chain.h>
 
 #define num_nearest_neighbors 1
 

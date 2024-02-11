@@ -8,10 +8,10 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Pose.h>
 
-#include "nanomap.h"
-#include "nanomap_visualizer.h"
+#include <nanomap_ros/nanomap.h>
+#include <nanomap_ros/nanomap_visualizer.h>
 
-#include "stopwatch.h"
+#include <nanomap_ros/stopwatch.h>
 
 using namespace std;
 

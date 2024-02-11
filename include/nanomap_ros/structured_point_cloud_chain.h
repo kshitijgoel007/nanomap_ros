@@ -1,8 +1,8 @@
 #ifndef STRUCTURED_POINT_CLOUD_CHAIN_H
 #define STRUCTURED_POINT_CLOUD_CHAIN_H
 
-#include "nanomap_types.h"
-#include "structured_point_cloud.h"
+#include <nanomap_ros/nanomap_types.h>
+#include <nanomap_ros/structured_point_cloud.h>
 
 struct EdgeVertex {
   Vector3 ApplyEdgeTransform(Vector3 const &p, Matrix4 const &transform) const;
