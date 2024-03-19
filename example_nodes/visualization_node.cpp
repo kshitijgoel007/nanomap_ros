@@ -3,6 +3,7 @@
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <tf2_ros/transform_listener.h>
 #include <nav_msgs/Path.h>
 #include <nav_msgs/Odometry.h>
@@ -10,6 +11,7 @@
 
 #include <nanomap_ros/nanomap.h>
 #include <nanomap_ros/nanomap_visualizer.h>
+#include <nanomap_ros/nanomap_types.h>
 
 #include <nanomap_ros/stopwatch.h>
 
@@ -22,7 +24,7 @@ geometry_msgs::Pose curr_pose;
 visualization_msgs::Marker getQueryPtMarker(int status, int id, Vector3 point_pos)
 {
   visualization_msgs::Marker marker1;
-  marker1.header.frame_id = "delta/base_link";
+  marker1.header.frame_id = "rocky0704/base";
   marker1.header.stamp = ros::Time();
   marker1.ns = "p" + std::to_string(id);
   marker1.id = id;
@@ -38,35 +40,35 @@ visualization_msgs::Marker getQueryPtMarker(int status, int id, Vector3 point_po
   marker1.scale.x = 1.0;
   marker1.scale.y = 1.0;
   marker1.scale.z = 1.0;
-  if (status == 6) // free space
+  if (status == 6) // free space, green
   {
     marker1.color.a = 1.0; // Don't forget to set the alpha!
     marker1.color.r = 0.0;
     marker1.color.g = 1.0;
     marker1.color.b = 0.0;
   }
-  // else if(status == 5) {
-  //   marker1.color.a = 1.0; // Don't forget to set the alpha!
-  //   marker1.color.r = 1.0;
-  //   marker1.color.g = 0.0;
-  //   marker1.color.b = 0.0;
-  // }
-  // else if(status == 3) {
-  //   marker1.color.a = 1.0; // Don't forget to set the alpha!
-  //   marker1.color.r = 0.0;
-  //   marker1.color.g = 0.0;
-  //   marker1.color.b = 1.0;
-  // }
-  // else if(status == 4) {  // yellow
-  //   marker1.color.a = 1.0; // Don't forget to set the alpha!
-  //   marker1.color.r = 1.0;
-  //   marker1.color.g = 1.0;
-  //   marker1.color.b = 0.0;
-  // }
+  else if(status == 5) {   // occluded, purple
+    marker1.color.a = 1.0; // Don't forget to set the alpha!
+    marker1.color.r = 1.0;
+    marker1.color.g = 0.0;
+    marker1.color.b = 1.0;
+  }
+  else if(status == 3) {   // laterally outside FOV, blue
+    marker1.color.a = 1.0; // Don't forget to set the alpha!
+    marker1.color.r = 0.0;
+    marker1.color.g = 0.0;
+    marker1.color.b = 1.0;
+  }
+  else if(status == 4) {   // beyond sensor horizon, yellow
+    marker1.color.a = 1.0; // Don't forget to set the alpha!
+    marker1.color.r = 1.0;
+    marker1.color.g = 1.0;
+    marker1.color.b = 0.0;
+  }
   else
   {
     // cout << "Occupied Space!" << endl;
-    // cyan
+    // red
     marker1.color.a = 1.0; // Don't forget to set the alpha!
     marker1.color.r = 1.0;
     marker1.color.g = 0.0;
@@ -82,13 +84,6 @@ public:
   {
     nanomap_visualizer.Initialize(nh);
 
-    ros::NodeHandle nh;
-    NanoMapVisualizer nanomap_visualizer;
-    nanomap_visualizer.Initialize(nh);
-
-    Matrix3 K;
-    K << 205.27, 0.0, 160.0, 0.0, 205.27, 120.0, 0.0, 0.0, 1.0;
-    nanomap.SetCameraInfo(4.0, 320.0, 240.0, K); // this K matrix was for binned, but the actual data is not binned
     nanomap.SetSensorRange(20.0);
     nanomap.SetNumDepthImageHistory(150);
     Matrix3 body_to_rdf;
@@ -98,20 +93,42 @@ public:
     pcl_sub = nh.subscribe("points", 100, &NanoMapNode::PointCloudCallback, this);
     pose_updates_sub = nh.subscribe("path", 100, &NanoMapNode::SmoothedPosesCallback, this);
     odom_sub = nh.subscribe("odometry", 100, &NanoMapNode::OdometryCallback, this);
+    camera_info_sub = nh.subscribe("/camera/camera_info", 100, &NanoMapNode::CameraInfoCallback, this);
   };
 
   ros::NodeHandle nh;
   ros::Subscriber pcl_sub;
   ros::Subscriber pose_updates_sub;
   ros::Subscriber odom_sub;
+  ros::Subscriber camera_info_sub;
   NanoMap nanomap;
   NanoMapVisualizer nanomap_visualizer;
   ros::Publisher query_points_pub = nh.advertise<visualization_msgs::MarkerArray>("query_points", 0);
 
-  bool initialized = false;
+  bool got_camera_info = false;
+
+  void CameraInfoCallback(const sensor_msgs::CameraInfo &msg)
+  {
+    if (got_camera_info)
+      return;
+		Matrix3 K_camera_info;
+		K_camera_info << msg.K[0], msg.K[1], msg.K[2], msg.K[3], msg.K[4], msg.K[5], 
+                     msg.K[6], msg.K[7], msg.K[8];
+    nanomap.SetCameraInfo(4.0, msg.width, msg.height, K_camera_info);
+    got_camera_info = true;
+    if (NANOMAP_DEBUG_PRINT)
+      std::cout << "Initialized camera parameters" << std::endl;
+  }
 
   void PointCloudCallback(const sensor_msgs::PointCloud2 &msg)
   {
+    if (NANOMAP_DEBUG_PRINT)
+      std::cout << "In PointCloudCallback" << std::endl;
+    if (!got_camera_info) {
+      if (NANOMAP_DEBUG_PRINT)
+        std::cout << "## Not initialized" << std::endl;
+      return;
+    }
     Stopwatch sw;
     sw.Start();
     pcl::PCLPointCloud2 cloud2_rdf;
@@ -120,6 +137,10 @@ public:
     pcl::fromPCLPointCloud2(cloud2_rdf, *cloud_rdf);
     NanoMapTime nm_time(msg.header.stamp.sec, msg.header.stamp.nsec);
     nanomap.AddPointCloud(cloud_rdf, nm_time, msg.header.seq);
+
+    std::vector<Matrix4> edges = nanomap.GetCurrentEdges();
+    if (NANOMAP_DEBUG_PRINT)
+      std::cout << "PointCloudCallback " << edges.size() << " edges" << std::endl;
 
     float insertion_time = sw.ElapsedMillis();
     // std::cout << "insertion_time: " << insertion_time << std::endl;
@@ -154,9 +175,9 @@ public:
           // args.query_point_current_body_frame = Vector3(x, m * x, 0.0);
           args.query_point_current_body_frame = Vector3(x, m * x, q);
           reply = nanomap.KnnQuery(args); // pass a point to query
-          std::cout << "Query point: "
-                    << args.query_point_current_body_frame(0) << " " << args.query_point_current_body_frame(1) << " " << args.query_point_current_body_frame(2) << std::endl;
-          std::cout << "FOV status: " << (int)(reply.fov_status) << std::endl;
+          // std::cout << "Query point: "
+          //           << args.query_point_current_body_frame(0) << " " << args.query_point_current_body_frame(1) << " " << args.query_point_current_body_frame(2) << std::endl;
+          // std::cout << "FOV status: " << reply.fov_status << std::endl;
 
           for (Vector3 v : reply.closest_points_in_frame_id)
           {
@@ -169,15 +190,17 @@ public:
             }
           }
           int status;
-          if ((int)(reply.fov_status) == 6)
-          {
-            if (!hit)
-              status = 6;
-            else
-              status = 5;
-          }
-          else
-            status = 5;
+          // if ((int)(reply.fov_status) == 6)
+          // {
+          //   if (!hit)
+          //     status = 6;
+          //   else
+          //     status = 5;
+          // }
+          // else
+          //   status = 5;
+          
+          status = (int)reply.fov_status;
 
           visualization_msgs::Marker mp0 = getQueryPtMarker(status, n, args.query_point_current_body_frame);
           query_points.markers.push_back(mp0);
@@ -200,34 +223,33 @@ public:
     nanomap_visualizer.DrawFrustums(edges);
   }
 
-  // void PoseCallback(geometry_msgs::PoseStamped const &pose)
   void OdometryCallback(nav_msgs::Odometry const &odom)
   {
+    if (NANOMAP_DEBUG_PRINT)
+      std::cout << "In OdometryCallback" << std::endl;
+    if (!got_camera_info) {
+      if (NANOMAP_DEBUG_PRINT)
+        std::cout << "## Not initialized" << std::endl;
+      return;
+    }
     geometry_msgs::Pose pose = odom.pose.pose;
-
-    // cout << "Pose: " << pose;
     Eigen::Quaterniond quat(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
     Vector3 pos = Vector3(pose.position.x, pose.position.y, pose.position.z);
-    // Eigen::Quaterniond quat(pose.pose.orientation.w, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z);
-    // Vector3 pos = Vector3(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
-    // NanoMapTime nm_time(pose.header.stamp.sec, pose.header.stamp.nsec);
     NanoMapTime nm_time(odom.header.stamp.sec, odom.header.stamp.nsec);
     NanoMapPose nm_pose(pos, quat, nm_time);
-    // nanomap.AddPose(nm_pose);
+    nanomap.AddPose(nm_pose);
 
-    curr_pose = pose;
-
-    // todo: abstract this into SetLastPose
     Matrix4 transform = Eigen::Matrix4d::Identity();
     transform.block<3, 3>(0, 0) = nm_pose.quaternion.toRotationMatrix();
     transform.block<3, 1>(0, 3) = nm_pose.position;
     nanomap_visualizer.SetLastPose(transform);
-
     DrawNanoMapVisualizer();
   }
 
   void SmoothedPosesCallback(nav_msgs::Path path)
   {
+    if (!got_camera_info) 
+      return;
     std::vector<NanoMapPose> smoothed_path_vector;
     size_t path_size = path.poses.size();
     for (size_t i = 0; i < path_size; i++)

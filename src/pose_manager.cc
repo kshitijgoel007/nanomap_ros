@@ -268,6 +268,7 @@ NanoMapPose PoseManager::GetPoseAtTime(NanoMapTime const &query_time)
     {
       std::cout << "i is " << i << std::endl;
     }
+
     pose_after = poses[i];
     if (pose_after.time.GreaterThan(query_time))
     {
@@ -460,7 +461,9 @@ void PoseManager::PrintAllPosePositions()
   int num_poses = poses.size();
   for (int i = 0; i < num_poses; i++)
   {
-    std::cout << poses.at(i).position.transpose() << " at time "
+    std::cout << "(#" << i << ") "
+              << poses.at(i).position.transpose() << " at time "
+              << poses.at(i).time.sec << "."
               << poses.at(i).time.nsec << std::endl;
   }
 }

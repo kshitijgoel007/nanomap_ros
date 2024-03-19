@@ -95,7 +95,7 @@ struct NanoMapTime {
 
 struct NanoMapPose {
   NanoMapPose(){};
-  NanoMapPose(Vector3 set_position, Quat set_quaternion, NanoMapTime set_time) {
+  NanoMapPose(const Vector3& set_position, const Quat& set_quaternion, const NanoMapTime& set_time) {
     position = set_position;
     quaternion = set_quaternion;
     time = set_time;

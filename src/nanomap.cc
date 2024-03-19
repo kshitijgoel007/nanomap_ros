@@ -121,11 +121,13 @@ void NanoMap::AddPointCloud(PointCloudPtr const &cloud_ptr,
   // to interpolate)
   if (pose_manager.GetNumPoses() == 0)
   {
+    std::cout << "ID 1 return" << std::endl;
     return;
   }
   NanoMapTime oldest_pose_time = pose_manager.GetOldestPoseTime();
   if (oldest_pose_time.GreaterThan(cloud_time))
   {
+    std::cout << "ID 2 return" << std::endl;
     return;
   }
   if (NANOMAP_DEBUG_PRINT)
