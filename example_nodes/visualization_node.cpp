@@ -89,8 +89,8 @@ public:
     pu::get("num_depth_image_history", num_depth_image_history, 150);
 
     std::cout << "Got from parameter server:\n"
-      << "max_range" << max_range  << "\n"
-      << "num_depth_image_history" << num_depth_image_history << "\n"
+      << "max_range: " << max_range  << "\n"
+      << "num_depth_image_history: " << num_depth_image_history << "\n"
       << std::endl;
 
     nanomap_visualizer.Initialize(nh);

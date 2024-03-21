@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 project(nanomap_ros)
 
 ## Find catkin macros and libraries
@@ -43,9 +43,6 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
-
-
-add_definitions("-std=c++17")
 
 find_package(orocos_kdl REQUIRED)
 find_library(OROCOS_KDL orocos-kdl)
