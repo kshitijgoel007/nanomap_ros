@@ -3,6 +3,16 @@
 
 void NanoMapVisualizer::SetLastPose(Matrix4 pose) { last_pose = pose; }
 
+
+void NanoMapVisualizer::SetCameraInfo(const float& max_range, const int& width, const int& height,
+                     const Matrix3 &K) {
+  this->max_range = max_range;
+  this->width = width;
+  this->height = height;
+  this-> K = K; 
+  this-> K_inv = K.inverse(); 
+}
+
 Eigen::Matrix4d invertTransform(Eigen::Matrix4d transform)
 {
   Matrix3 R = transform.block<3, 3>(0, 0);
@@ -22,11 +32,10 @@ void NanoMapVisualizer::DrawFrustums(std::vector<Matrix4> edges)
   BodyToRDF_inverse << 0, 0, 1, -1, 0, 0, 0, -1, 0;
 
   // start in that poses' rdf, and rotate to body
-  double range = 20.0;
-  Vector3 bottom_right = BodyToRDF_inverse * Vector3(14, 10.5, range);
-  Vector3 top_right = BodyToRDF_inverse * Vector3(14, -10.5, range);
-  Vector3 top_left = BodyToRDF_inverse * Vector3(-14, -10.5, range);
-  Vector3 bottom_left = BodyToRDF_inverse * Vector3(-14, 10.5, range);
+  Vector3 bottom_right = max_range * BodyToRDF_inverse * K_inv * Vector3(width, height, 1.0);
+  Vector3 top_right = max_range * BodyToRDF_inverse * K_inv * Vector3(width, 0.0, 1.0);
+  Vector3 top_left = max_range * BodyToRDF_inverse * K_inv * Vector3(0.0, 0.0, 1.0);
+  Vector3 bottom_left = max_range * BodyToRDF_inverse * K_inv * Vector3(0.0, height, 1.0);
   Vector3 body = Vector3(0, 0, 0);
 
   // Eigen::Matrix4d transform = transformFromPreviousBodyToWorld(fov_id);
@@ -53,7 +62,7 @@ void NanoMapVisualizer::DrawFrustums(std::vector<Matrix4> edges)
     if (i % 5 == 0)
     {
       PublishFovMarker((i + 1) * 2, corner_0, corner_1, corner_2, corner_3,
-                       corner_4, false);
+                       corner_4, true);
     }
   }
 }

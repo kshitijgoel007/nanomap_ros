@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
   pcl_ros
+  parameter_utils
 )
 
 find_package(Eigen3 REQUIRED)

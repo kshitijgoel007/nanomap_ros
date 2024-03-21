@@ -15,6 +15,8 @@ public:
   }
 
   void SetLastPose(Matrix4 pose);
+  void SetCameraInfo(const float& max_range, const int& width, const int& height,
+                     const Matrix3 &K);
 
   void DrawFrustums(std::vector<Matrix4> edges);
   void PublishFovMarker(int fov_id, Vector3 body, Vector3 corner_1,
@@ -23,6 +25,11 @@ public:
 
 private:
   Matrix4 last_pose;
+  Matrix3 K;
+  Matrix3 K_inv;
+  int width;
+  int height;
+  float max_range;
 
   ros::NodeHandle nh;
   ros::Publisher fov_pub;

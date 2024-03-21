@@ -12,10 +12,12 @@
 #include <nanomap_ros/nanomap.h>
 #include <nanomap_ros/nanomap_visualizer.h>
 #include <nanomap_ros/nanomap_types.h>
-
 #include <nanomap_ros/stopwatch.h>
 
+#include <parameter_utils/ParameterUtils.h>
+
 using namespace std;
+namespace pu = parameter_utils;
 
 Stopwatch global_time;
 
@@ -82,18 +84,31 @@ class NanoMapNode
 public:
   NanoMapNode() : nh("~")
   {
+    // Get values from param server
+    pu::get("max_range", max_range, (float)20.0);
+    pu::get("num_depth_image_history", num_depth_image_history, 150);
+
+    std::cout << "Got from parameter server:\n"
+      << "max_range" << max_range  << "\n"
+      << "num_depth_image_history" << num_depth_image_history << "\n"
+      << std::endl;
+
     nanomap_visualizer.Initialize(nh);
 
-    nanomap.SetSensorRange(20.0);
-    nanomap.SetNumDepthImageHistory(150);
+    nanomap.SetSensorRange(max_range);
+    nanomap.SetNumDepthImageHistory(num_depth_image_history);
     Matrix3 body_to_rdf;
     body_to_rdf << 0, -1, 0, 0, 0, -1, 1, 0, 0;
     nanomap.SetBodyToRdf(body_to_rdf);
 
+    // Subscribers
     pcl_sub = nh.subscribe("points", 100, &NanoMapNode::PointCloudCallback, this);
     pose_updates_sub = nh.subscribe("path", 100, &NanoMapNode::SmoothedPosesCallback, this);
     odom_sub = nh.subscribe("odometry", 100, &NanoMapNode::OdometryCallback, this);
     camera_info_sub = nh.subscribe("/camera/camera_info", 100, &NanoMapNode::CameraInfoCallback, this);
+
+    // Publishers
+    query_points_pub = nh.advertise<visualization_msgs::MarkerArray>("query_points", 0);
   };
 
   ros::NodeHandle nh;
@@ -101,9 +116,13 @@ public:
   ros::Subscriber pose_updates_sub;
   ros::Subscriber odom_sub;
   ros::Subscriber camera_info_sub;
+  ros::Publisher query_points_pub;
+
   NanoMap nanomap;
   NanoMapVisualizer nanomap_visualizer;
-  ros::Publisher query_points_pub = nh.advertise<visualization_msgs::MarkerArray>("query_points", 0);
+
+  float max_range;
+  int num_depth_image_history;
 
   bool got_camera_info = false;
 
@@ -111,19 +130,31 @@ public:
   {
     if (got_camera_info)
       return;
+    std::cout << "Got camera info: \n"
+      << "width: " << msg.width << "\n"
+      << "height: " << msg.height << "\n"
+      << "binning: " << msg.binning_x << "\n"
+      << "fx: " << msg.K[0] << "\n"
+      << "fy: " << msg.K[4] << "\n"
+      << "cx: " << msg.K[2] << "\n"
+      << "cy: " << msg.K[5] << "\n"
+      << std::endl;
+
 		Matrix3 K_camera_info;
 		K_camera_info << msg.K[0], msg.K[1], msg.K[2], msg.K[3], msg.K[4], msg.K[5], 
                      msg.K[6], msg.K[7], msg.K[8];
-    nanomap.SetCameraInfo(4.0, msg.width, msg.height, K_camera_info);
+    nanomap.SetCameraInfo(msg.binning_x, msg.width, msg.height, K_camera_info);
+    nanomap_visualizer.SetCameraInfo(max_range, msg.width, msg.height, K_camera_info);
     got_camera_info = true;
+
     if (NANOMAP_DEBUG_PRINT)
       std::cout << "Initialized camera parameters" << std::endl;
   }
 
   void PointCloudCallback(const sensor_msgs::PointCloud2 &msg)
   {
-    if (NANOMAP_DEBUG_PRINT)
-      std::cout << "In PointCloudCallback" << std::endl;
+    // if (NANOMAP_DEBUG_PRINT)
+      std::cout << "In POINTCLOUDCALLBACK" << std::endl;
     if (!got_camera_info) {
       if (NANOMAP_DEBUG_PRINT)
         std::cout << "## Not initialized" << std::endl;
@@ -143,13 +174,7 @@ public:
       std::cout << "PointCloudCallback " << edges.size() << " edges" << std::endl;
 
     float insertion_time = sw.ElapsedMillis();
-    // std::cout << "insertion_time: " << insertion_time << std::endl;
-
-    sw.Start();
-
-    sw.Stop();
-    float distance_update_time = sw.ElapsedMillis();
-    //std::cout << "distance_update_time: " << distance_update_time << std::endl;
+    std::cout << "insertion_time: " << insertion_time << std::endl;
 
     sw.Start();
     int num_samples = 10;
@@ -158,7 +183,7 @@ public:
 
     NanoMapKnnArgs args;
     args.axis_aligned_linear_covariance = Vector3(0.1, 0.1, 0.1);
-    args.early_exit = false;
+    args.early_exit = true;
 
     visualization_msgs::MarkerArray query_points;
     NanoMapKnnReply reply;
@@ -168,11 +193,10 @@ public:
     {
       for (float x = -rad; x <= rad; x = x + delta)
       {
-        for (float q = -2; q <= 2; q += 1) // add z sample - to be improved
+        for (float q = -2; q <= 2; q += 1)
         {
           n++;
           bool hit = false;
-          // args.query_point_current_body_frame = Vector3(x, m * x, 0.0);
           args.query_point_current_body_frame = Vector3(x, m * x, q);
           reply = nanomap.KnnQuery(args); // pass a point to query
           // std::cout << "Query point: "
@@ -189,19 +213,7 @@ public:
               break;
             }
           }
-          int status;
-          // if ((int)(reply.fov_status) == 6)
-          // {
-          //   if (!hit)
-          //     status = 6;
-          //   else
-          //     status = 5;
-          // }
-          // else
-          //   status = 5;
-          
-          status = (int)reply.fov_status;
-
+          int status = (int)reply.fov_status;
           visualization_msgs::Marker mp0 = getQueryPtMarker(status, n, args.query_point_current_body_frame);
           query_points.markers.push_back(mp0);
         }
@@ -215,6 +227,8 @@ public:
 
     sw.Stop();
     float sample_time = sw.ElapsedMillis();
+
+    std::cout << "sample_time: " << sample_time << std::endl;
   }
 
   void DrawNanoMapVisualizer()
