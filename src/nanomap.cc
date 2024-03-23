@@ -360,14 +360,21 @@ std::vector<Matrix4> NanoMap::GetCurrentEdges() const
 
 NanoMapKnnReply NanoMap::KnnQuery(NanoMapKnnArgs const &args) const
 {
-  // std::cout << "Entering KnnQuery" << std::endl;
+  if (NANOMAP_DEBUG_PRINT) {
+    std::cout << "Entering KnnQuery" << std::endl;
+  }
   if (received_camera_info && received_sensor_transform)
   {
-    // std::cout << "Calling down to structured_point_cloud_chain" << std::endl;
+    if (NANOMAP_DEBUG_PRINT) {
+      std::cout << "## Calling down to structured_point_cloud_chain" << std::endl;
+    }
     return structured_point_cloud_chain.KnnQuery(args);
   }
   else
   {
+    if (NANOMAP_DEBUG_PRINT) {
+      std::cout << "## NanoMapFovStatus not_initialized" << std::endl;
+    }
     NanoMapKnnReply reply;
     reply.fov_status = NanoMapFovStatus::not_initialized;
     return reply;

@@ -50,10 +50,10 @@ public:
     tf_listener = new tf2_ros::TransformListener(*tf_buffer);
 
     // Subscribers
-    pcl_sub = nh.subscribe("points", 100, &BenchmarkingNode::PointCloudCallback, this);
-    pose_updates_sub = nh.subscribe("path", 100, &BenchmarkingNode::SmoothedPosesCallback, this);
-    odom_sub = nh.subscribe("odometry", 100, &BenchmarkingNode::OdometryCallback, this);
-    camera_info_sub = nh.subscribe("/camera/camera_info", 100, &BenchmarkingNode::CameraInfoCallback, this);
+    pcl_sub = nh.subscribe("points_topic", 100, &BenchmarkingNode::PointCloudCallback, this);
+    pose_updates_sub = nh.subscribe("path_topic", 100, &BenchmarkingNode::SmoothedPosesCallback, this);
+    odom_sub = nh.subscribe("odometry_topic", 100, &BenchmarkingNode::OdometryCallback, this);
+    camera_info_sub = nh.subscribe("depth_camera_info_topic", 100, &BenchmarkingNode::CameraInfoCallback, this);
 
   };
   ~BenchmarkingNode() {
@@ -120,6 +120,7 @@ public:
     Stopwatch sw;
     sw.Start();
 
+    // Just a dummy transform for more realistic timing 
     geometry_msgs::TransformStamped transform_world_sensor;
     try {
       transform_world_sensor = tf_buffer->lookupTransform("world", msg.header.frame_id, msg.header.stamp);

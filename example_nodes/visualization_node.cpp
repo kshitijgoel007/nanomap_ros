@@ -102,10 +102,10 @@ public:
     nanomap.SetBodyToRdf(body_to_rdf);
 
     // Subscribers
-    pcl_sub = nh.subscribe("points", 100, &NanoMapNode::PointCloudCallback, this);
-    pose_updates_sub = nh.subscribe("path", 100, &NanoMapNode::SmoothedPosesCallback, this);
-    odom_sub = nh.subscribe("odometry", 100, &NanoMapNode::OdometryCallback, this);
-    camera_info_sub = nh.subscribe("/camera/camera_info", 100, &NanoMapNode::CameraInfoCallback, this);
+    pcl_sub = nh.subscribe("points_topic", 100, &NanoMapNode::PointCloudCallback, this);
+    pose_updates_sub = nh.subscribe("path_topic", 100, &NanoMapNode::SmoothedPosesCallback, this);
+    odom_sub = nh.subscribe("odometry_topic", 100, &NanoMapNode::OdometryCallback, this);
+    camera_info_sub = nh.subscribe("depth_camera_info_topic", 100, &NanoMapNode::CameraInfoCallback, this);
 
     // Publishers
     query_points_pub = nh.advertise<visualization_msgs::MarkerArray>("query_points", 0);
