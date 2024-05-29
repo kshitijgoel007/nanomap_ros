@@ -1,0 +1,8 @@
+int32 primitive_id
+uint8 fov_status
+uint32 frame_id
+geometry_msgs/Vector3 query_point_in_current_rdf
+geometry_msgs/Vector3 query_point_in_frame_id
+geometry_msgs/Vector3[] closest_points_in_frame_id
+geometry_msgs/Vector3 axis_aligned_linear_covariance
+int32 query_depth

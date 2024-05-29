@@ -28,6 +28,18 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
+add_message_files(
+  FILES
+  NanoMapQuery.msg
+  NanoMapQueryArray.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  std_msgs
+)
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}

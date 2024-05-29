@@ -61,9 +61,11 @@ std::ostream &operator<<(
 struct NanoMapKnnReply {
   NanoMapFovStatus fov_status;
   uint32_t frame_id;
+  Vector3 query_point_in_current_rdf;
   Vector3 query_point_in_frame_id;
   std::vector<Vector3> closest_points_in_frame_id;
   Vector3 axis_aligned_linear_covariance;
+  uint32_t query_depth;
 };
 
 struct NanoMapTime {

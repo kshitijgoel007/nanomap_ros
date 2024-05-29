@@ -135,6 +135,7 @@ StructuredPointCloudChain::KnnQuery(NanoMapKnnArgs const &args) const {
   Vector3 first_search_position_rdf;
 
   // search through chain
+  uint32_t depth = 0;
   for (auto i = chain.cbegin(); i != chain.cend(); ++i) {
     // transform to previous body frame
     search_position_rdf =
@@ -182,11 +183,14 @@ StructuredPointCloudChain::KnnQuery(NanoMapKnnArgs const &args) const {
       }
       reply.fov_status = fov_status;
       reply.frame_id = i->vertex->frame_id_;
+      reply.query_point_in_current_rdf = _body_to_rdf * args.query_point_current_body_frame;
       reply.query_point_in_frame_id = search_position_rdf;
       reply.closest_points_in_frame_id = return_points;
       reply.axis_aligned_linear_covariance = sigma_rdf;
+      reply.query_depth = depth;
       return reply;
     }
+    ++depth;
   }
   chain.at(0).vertex->kd_tree_.SearchForNearest<num_nearest_neighbors>(
       first_search_position_rdf[0], first_search_position_rdf[1],
@@ -216,10 +220,13 @@ StructuredPointCloudChain::KnnQuery(NanoMapKnnArgs const &args) const {
     }
   }
 
+  // query is not found
   reply.fov_status = first_fov_status;
   reply.frame_id = first_frame_id;
+  reply.query_point_in_current_rdf = _body_to_rdf * args.query_point_current_body_frame;
   reply.query_point_in_frame_id = first_search_position_rdf;
   reply.closest_points_in_frame_id = return_points;
   reply.axis_aligned_linear_covariance = first_sigma_rdf;
+  reply.query_depth = -1;
   return reply;
 }
