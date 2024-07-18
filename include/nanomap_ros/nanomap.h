@@ -23,6 +23,11 @@ public:
                      Matrix3 const &K_camera_info);
   void SetBodyToRdf(Matrix3 const &R_body_to_rdf);
 
+  NanoMapPose GetMostRecentPose() {
+    const NanoMapTime t = pose_manager.GetMostRecentPoseTime();
+    return pose_manager.GetPoseAtTime(t);
+  }
+
   std::vector<Matrix4> GetCurrentEdges() const;
 
   NanoMapKnnReply KnnQuery(NanoMapKnnArgs const &args) const;
