@@ -107,7 +107,7 @@ NanoMapFovStatus FovEvaluator::EvaluateFov(PointCloudPtr const &point_cloud_ptr,
     return NanoMapFovStatus::free_space;
   }
   pcl::PointXYZ point = point_cloud_ptr->at(pi_x, pi_y);
-  if (std::isnan(point.z))
+  if (std::isnan(point.z) || point.z <= 1e-6)
   {
     return NanoMapFovStatus::free_space;
   }
