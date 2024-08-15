@@ -85,7 +85,13 @@ public:
     size_t num_points = xyz_cloud_new->points.size();
     for (size_t i = 0; i < num_points; i++) {
       if (!(xyz_cloud_new->points[i].x != xyz_cloud_new->points[i].x)) {
-        cloud.pts.push_back(xyz_cloud_new->points[i]);
+        double x = xyz_cloud_new->points[i].x;
+        double y = xyz_cloud_new->points[i].y;
+        double z = xyz_cloud_new->points[i].z;
+        double distance = x*x + y*y + z*z;
+        if (distance > 0.05 * 0.05) { // Don't add points close to zero
+          cloud.pts.push_back(xyz_cloud_new->points[i]);
+        }
       }
     }
 
